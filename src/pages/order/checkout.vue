@@ -18,7 +18,7 @@
   </view>
   <view>
     请在时间内支付，超时自动取消订单
-    <van-count-down :time="time"/>
+    <van-count-down ref="countDown" :time="time"/>
 
   </view>
 
@@ -34,14 +34,14 @@
   </view>
 
   <van-field v-model="remark" label="备注" placeholder="如有需要请填写"/>
-  <van-radio-group v-model="radio" @change="onChange">
-    <van-radio :use-icon-slot="true" :value="radio" name="1" checked-color="#ee0a24">
+  <van-radio-group v-model="payType" @change="onChange">
+    <van-radio :use-icon-slot="true" :value="payType" name="1" checked-color="#ee0a24">
       支付宝支付
       <template #icon>
         <img class="img-icon" src="../../static/images/zfb.png"/>
       </template>
     </van-radio>
-    <van-radio :use-icon-slot="true" :value="radio" name="2">
+    <van-radio :use-icon-slot="true" :value="payType" name="2">
       微信支付
       <template #icon>
         <img class="img-icon" src="../../static/images/wx.png"/>
@@ -51,7 +51,7 @@
   <view style="height: 50rpx"></view>
 
   <van-submit-bar :price="amount * 100" button-text="支付" @submit="onSubmit"/>
-  <van-dialog id="van-dialog" />
+
 
 </template>
 
@@ -65,13 +65,17 @@ export default {
 
   data() {
     return {
+      type: 'center',
+      msgType: 'success',
+      messageText: '这是一条成功提示',
+      value: '',
       show:false,
-      time: 30 * 60 * 60 * 1000,
+      time: 3000 ,
       shopList: [],
       amount: 0,
       remark: '',
       orderNo: '',
-      radio: 1,
+      payType: 1,
       icon: {
         active: '',
         normal: 'https://img01.yzcdn.cn/vant/user-active.png'
@@ -91,20 +95,31 @@ export default {
 
     //就当做已经付款，沒做支付功能
     onSubmit() {
-      submitOrder(this.orderNo, this.radio)
+      //倒计时时间
+      if(this.$refs.countDown.remain >0){
+        submitOrder(this.orderNo, this.payType)
+        uni.$emit('refresh', { refresh: true });
+        uni.navigateBack()
+      }else {
+        this.messageText = `订单超时`
+        this.$refs.message.open()
+      }
+
     },
     onChange(event) {
-      this.radio = event.detail
-      console.log(this.radio)
+      this.payType = event.detail
+      console.log(this.payType)
     }
   },
+
   onLoad() {
     const shopList = localStorage.get('shopList')
+    console.log(shopList)
     const amount = localStorage.get('amount')
     const tableId = localStorage.get('tableId')
     const param = {shopList, amount, tableId}
     this.shopList = shopList
-
+    this.amount = amount
     createOrder(param).then(res => {
       this.orderNo = res
       console.log(res)

@@ -1,5 +1,7 @@
 <template>
   <view>
+    <van-notice-bar @close="m" v-if="a.length === 0" mode="closeable" text="没有选择商品" />
+
     <view class="ld">
       <view class="left">
 <!--        侧边栏-->
@@ -75,6 +77,8 @@ import {createOrder} from "../../api/order";
 export default {
   data() {
     return {
+      a:[1],
+      cahceIds:[],
       amount:0,
       show:false,
       shopNum:0,
@@ -95,6 +99,9 @@ export default {
     };
   },
   methods: {
+    m(){
+      this.a = [1]
+    },
     cancel() {
       this.show = false
     },
@@ -102,14 +109,18 @@ export default {
       this.show = true
     },
     submit() {
-      const shopList  =this.shopList
-      const amount  =this.amount
 
-      localStorage.set('shopList',shopList)
-      localStorage.set('amount',amount)
-      uni.navigateTo({
-        url: `/pages/order/checkout`
-      })
+       this.a  = this.shopList.filter(m => m.selectNum !== 0)
+      console.log(this.a.length)
+      if (this.a.length > 0){
+        const amount  =this.amount
+        localStorage.set('shopList',this.a)
+        localStorage.set('amount',amount)
+        uni.navigateTo({
+          url: `/pages/order/checkout`
+        })
+      }
+
     },
     updateShopList(m,type) {
       if (type === '-'){
@@ -155,6 +166,7 @@ export default {
       })
     },
     setId(index, sortId) {
+      this.cahceIds.push(this.index.toString())
       localStorage.set(this.index.toString(), this.productList.map(m => m.selectNum));
       getProductList(this.shopId, sortId).then(res => {
         this.productList = res.list;
@@ -227,8 +239,35 @@ export default {
           });
     }
   },
-  onLoad(options) {
+  //跳转回来页面刷新,清空数据
+  onShow() {
+    uni.$on('refresh', (data) => {
+      if (data.refresh) {
+        getProductSort(this.shopId).then(res =>{
+          this.sortList = res
+        });
+        //获取默认菜单
+        getProductList(this.shopId,null).then(res => {
+          let sortId = res.list[0].sortId
+          for (let i = 0; i < this.sortList.length; i++) {
+            if (this.sortList[i].id === sortId) {
+              this.currentNum = i
+              this.index = sortId
+            }
+          }
+          this.productList = res.list
+        })
+        this.shopList = []
+        this.shopNum = 0
+        this.amount = 0
+        this.cahceIds.forEach(m =>{
+          localStorage.remove(m)
+        })
+      }
+    });
+  },
 
+  onLoad(options) {
     if (options && options.scene) {
       const scene = decodeURIComponent(options.scene);
       const param  = scene.split(":")
