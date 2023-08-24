@@ -5,5 +5,6 @@ export default defineConfig({
   plugins: [
     uni(),
   ],
+  transpileDependencies: ['@dcloudio/uni-ui']
 
 })

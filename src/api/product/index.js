@@ -3,12 +3,12 @@ import {
 } from '../../utils/request'
 
 
-export const getProductSort = (shopId) => request({url: '/product/sort/getProductSort/'+ shopId ,method: 'get'})
-export const getProductList = (shopId, sortId) => {
-    let url = '/product/product/getProductList?shopId=' + shopId;
+export const getProductSort = () => request({url: '/product/sort/getProductSort' ,method: 'get'})
+export const getProductList = (sortId) => {
+    let url = '/product/product/getProductList';
 
     if (sortId !== null) {
-        url += '&sortId=' + sortId;
+        url += '?sortId=' + sortId;
     }
 
     return request({ url, method: 'get' });

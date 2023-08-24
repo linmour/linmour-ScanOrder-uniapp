@@ -243,11 +243,11 @@ export default {
   onShow() {
     uni.$on('refresh', (data) => {
       if (data.refresh) {
-        getProductSort(this.shopId).then(res =>{
+        getProductSort().then(res =>{
           this.sortList = res
         });
         //获取默认菜单
-        getProductList(this.shopId,null).then(res => {
+        getProductList(null).then(res => {
           let sortId = res.list[0].sortId
           for (let i = 0; i < this.sortList.length; i++) {
             if (this.sortList[i].id === sortId) {
@@ -273,13 +273,14 @@ export default {
       const param  = scene.split(":")
       this.shopId = param[1]
       localStorage.set('tableId',param[2])
+      localStorage.set('shopId',param[1])
     }
     //获取分类
-    getProductSort(this.shopId).then(res =>{
+    getProductSort().then(res =>{
       this.sortList = res
     });
     //获取默认菜单
-    getProductList(this.shopId,null).then(res => {
+    getProductList(null).then(res => {
       let sortId = res.list[0].sortId
       for (let i = 0; i < this.sortList.length; i++) {
         if (this.sortList[i].id === sortId) {

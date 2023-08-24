@@ -52,6 +52,13 @@
 
   <van-submit-bar :price="amount * 100" button-text="支付" @submit="onSubmit"/>
 
+  <view>
+    <!-- 提示信息弹窗 -->
+    <uni-popup ref="message" type="message">
+      <uni-popup-message type="error" message="订单已超时" :duration="2000"></uni-popup-message>
+    </uni-popup>
+  </view>
+
 
 </template>
 
@@ -70,7 +77,7 @@ export default {
       messageText: '这是一条成功提示',
       value: '',
       show:false,
-      time: 3000 ,
+      time: 30000 ,
       shopList: [],
       amount: 0,
       remark: '',
@@ -101,8 +108,14 @@ export default {
         uni.$emit('refresh', { refresh: true });
         uni.navigateBack()
       }else {
-        this.messageText = `订单超时`
+        // 使用setTimeout函数延时执行代码
         this.$refs.message.open()
+        setTimeout(function(){
+          uni.$emit('refresh', { refresh: true });
+          uni.navigateBack()
+        }, 500);
+
+
       }
 
     },
