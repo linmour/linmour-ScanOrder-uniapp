@@ -1,59 +1,65 @@
 <template>
   <view>
-    <van-notice-bar @close="m" v-if="a.length === 0" mode="closeable" text="没有选择商品" />
+    <van-notice-bar @close="m" v-if="a.length === 0" mode="closeable" text="没有选择商品"/>
 
     <view class="ld">
       <view class="left">
-<!--        侧边栏-->
-        <scroll-view :scroll-y="true" :scroll-with-animation="true" :scroll-into-view="clickToId" :style="{ height: windowHeight }">
+
+        <van-sidebar>
           <view v-for="(item, index) in sortList" :key="index">
-            <view :class="['title', { active: index === currentNum }]" :id="'to' + index" @click="setId(index,item.id)"
-                  style="border-radius: 10rpx; ">{{ item.sort }}</view>
+            <van-sidebar-item :title="item.sort" custom-class="cellTab" @click="onChange(item.id)"/>
           </view>
-        </scroll-view>
+
+        </van-sidebar>
       </view>
       <view class="right" style="margin-left: 20rpx">
-        <scroll-view :scroll-into-view="clickId" @scroll="scroll" :scroll-with-animation="true" :scroll-y="true" :style="{ height: windowHeight }">
-          <view v-for="(it, idx) in productList" :key="idx" style="margin-top: 5rpx">
-            <view style="position: relative; margin-top: 10rpx" >
-              <view @click="productDetail">
-                  <van-image
-                      width="100"
-                      height="100"
-                      radius="10px"
-                      :src="it.picture"
-                  />
-                <view style="position: absolute; font-weight: bold; top: 0; right: calc(50rpx - {{ it.name.length }}ch); width: 100%; text-align: center;">{{ it.name }}</view>
-                <text  style="position: absolute;  top: 45rpx; right: 10rpx; width: 100%; text-align: center; font-size: 20rpx">{{ it.intro }}</text>
-                <text>{{ it.price }}</text>
-                </view>
-              <!--               +按钮-->
-              <button v-if="it.selectNum === 0" @click.stop="select(idx)" class="button">+</button>
 
-<!--              数字加减栏        :value="it.selectNum" @input="setValue"  这两个很关键，要不然步进器显示的值不会改变                                 -->
-              <van-stepper  :value="it.selectNum" @input="setValue" disable-input style="  position: absolute;top: 160rpx;right: 50rpx;" v-else theme="round"  @minus="minus(idx)" @plus="add(idx)" @overlimit="minus(idx)"/>
+        <view v-for="(item, index) in productList" :key="index">
+          <van-card
+              v-if="item.sortId === sortId"
+              style="height: 150rpx"
+              :price="item.price"
+              :desc="item.intro"
+              :thumb="(item.picture).split(',')[0]"
+              :title="item.name"
+          >
+            <template #tags>
+              <van-tag plain type="danger">标签</van-tag>
+              <van-tag plain type="danger">标签</van-tag>
+            </template>
 
-            </view>
-            <view >
-            </view>
-          </view>
-        </scroll-view>
+            <template #footer>
+              <van-button v-if="item.selectNum === 0" @click="select(index)" size="mini">选择</van-button>
+              <!--              数字加减栏        :value="it.selectNum" @input="setValue"  这两个很关键，要不然步进器显示的值不会改变                                 -->
+              <van-stepper v-else :value="item.selectNum" @input="setValue" disable-input :long-press="false"
+                           style="  position: absolute;top: 170rpx;right: 20rpx;" theme="round"
+                           @minus="minus(index)" @plus="add(index)" @overlimit="minus(index)"/>
+
+              <van-icon/>
+
+            </template>
+
+          </van-card>
+          <view style="height: 5rpx;color: #999999"> {{ this.tableId }}</view>
+        </view>
+
       </view>
+
     </view>
-<!--  下边栏-->
+    <!--  下边栏-->
 
     <van-goods-action>
       <view style="width: 50px"></view>
-      <van-goods-action-icon icon="cart-o" :info="shopNum" text="购物车" @click="shopCar" />
+      <van-goods-action-icon icon="cart-o" :info="shopNum" text="购物车" @click="shopCar"/>
       <view style="width: 100px"></view>
       <view style="width: 50px">￥ {{ amount }}</view>
-      <van-goods-action-button text="立即购买" @click="submit" />
+      <van-goods-action-button text="立即购买" @click="submit"/>
       <view style="width: 30px"></view>
     </van-goods-action>
 
-<!--    购物车弹窗-->
-    <van-action-sheet  @click-overlay="cancel" @close="cancel" v-model:show="show" title="购物车">
-      <view v-for="it in shopList" :key="it.id">
+    <!--    购物车弹窗-->
+    <van-action-sheet @click-overlay="cancel" @close="cancel" v-model:show="show" title="购物车">
+      <view v-for="it in shopCarList" :key="it.id">
         <van-card
             v-if="it.selectNum > 0"
             :num="it.selectNum"
@@ -73,33 +79,38 @@
 import {getProductList, getProductSort} from "../../api/product/index";
 import shopCarImg from '@/static/images/shop.png';
 import localStorage from "../../utils/localStorage.js";
-import {createOrder} from "../../api/order";
+import websocketUtil from "../../utils/websocketUtil"
+
+
 export default {
   data() {
     return {
-      a:[1],
-      cahceIds:[],
-      amount:0,
-      show:false,
-      shopNum:0,
-      shopList:[],
+      a: [1],
+      cahceIds: [],
+      amount: 0,
+      show: false,
+      shopNum: 0,
+      shopCarList: [],
       shopCarImg,
-      active:0,
+      active: 0,
       number: 0,
-      shopId:0,
+      shopId: 0,
+      sortId: 0,
       sortList: [],
-      productList:[],
+      productListBySortId: [],
+      productList: [],
       windowHeight: '0rpx',
-      clickId: '',
-      clickToId: '',
       currentNum: 0,
-      topList: [],
-      isLeftClick: false,
-      index:'',
+      index: '',
+      ws: Object,
+      tableId: 0,
     };
   },
   methods: {
-    m(){
+    onChange(sortId) {
+      this.sortId = sortId
+    },
+    m() {
       this.a = [1]
     },
     cancel() {
@@ -109,145 +120,71 @@ export default {
       this.show = true
     },
     submit() {
-
-       this.a  = this.shopList.filter(m => m.selectNum !== 0)
-      console.log(this.a.length)
-      if (this.a.length > 0){
-        const amount  =this.amount
-        localStorage.set('shopList',this.a)
-        localStorage.set('amount',amount)
+      if (this.shopCarList.length > 0) {
+        localStorage.set('shopList', this.a)
+        localStorage.set('amount', this.amount)
         uni.navigateTo({
           url: `/pages/order/checkout`
         })
       }
 
     },
-    updateShopList(m,type) {
-      if (type === '-'){
+    updateShopList(m, type) {
+      if (type === '-') {
         this.amount = this.amount - m.price
-
-      }else {
+      } else {
         this.amount = this.amount + m.price
+      }
+      let flag = true;
+      //同步购物车信息，对比购物车是否有这种物品，如果有就 +1 ,没有就加入数组
+      if (this.shopCarList !== ''){
+        this.shopCarList.forEach(function (obj, j) {
+          if (m.id === obj.id) {
+            this.shopCarList[j].selectNum = m.selectNum;
+            flag = !flag;
+          }
+        }, this);
 
       }
-      for (let j = 0; j < this.shopList.length; j++) {
-        let n = this.shopList[j];
-        if (m.id === n.id) {
-          this.shopList[j].selectNum = m.selectNum;
-          return;
-        }
+      if (flag) {
+        this.shopCarList.push(m);
       }
-      this.shopList.push(m);
+      localStorage.set("shopCarList", this.shopCarList)
     },
+
     add(index) {
-      this.shopNum++;
-      const m = this.productList[index];
-      this.productList[index].selectNum++;
-      this.updateShopList(m,'+');
+      const a = {change:"",tableId: this.tableId, productId: index, type: "+"}
+      this.ws.send(JSON.stringify(a))
     },
     minus(index) {
-      this.shopNum--;
-      const m = this.productList[index];
-      this.productList[index].selectNum--;
-      this.updateShopList(m,'-');
+      if (this.productList[index].selectNum >0){
+        const a = {change:"",tableId: this.tableId, productId: index, type: "-"}
+        this.ws.send(JSON.stringify(a))
+      }
+
     },
     select(index) {
-      this.shopNum++;
-      const m = this.productList[index];
-      this.productList[index].selectNum++;
-      this.updateShopList(m,"+");
+      const a = {change:"",tableId: this.tableId, productId: index, type: "+"}
+      this.ws.send(JSON.stringify(a))
     },
     setValue(index, val) {
-      this.productList[index].selectNum = val;
+      this.productListBySortId[index].selectNum = val;
     },
     productDetail() {
       uni.navigateTo({
         url: `/pages/order/detail`
       })
     },
-    setId(index, sortId) {
-      this.cahceIds.push(this.index.toString())
-      localStorage.set(this.index.toString(), this.productList.map(m => m.selectNum));
-      getProductList(this.shopId, sortId).then(res => {
-        this.productList = res.list;
-        let cacheArr = localStorage.get(sortId.toString());
-        if (cacheArr !== undefined) {
-          if (cacheArr && cacheArr.length === this.productList.length) {
-            for (let i = 0; i < this.productList.length; i++) {
-              this.productList[i].selectNum = cacheArr[i];
-            }
-          } else {
-            console.log('缓存数据长度不符合预期');
-          }
-        } else {
-          console.log('未找到缓存数据');
-        }
-        outerLoop: for (let i = 0; i < this.productList.length; i++) {
-          const m = this.productList[i];
-          for (let j = 0; j < this.shopList.length; j++) {
-            const n = this.shopList[j];
-            if (m.id === n.id) {
-              n.selectNum = m.selectNum
-              break outerLoop;
-            }
-          }
-          this.shopList.push(m)
-          console.log(this.shopList)
-        }
-        this.clickId = 'po' + index;
-        this.isLeftClick = true;
-        this.currentNum = index;
-        this.index = sortId;
-      });
-    },
-    scroll(e) {
-      if (this.isLeftClick) {
-        this.isLeftClick = false;
-        return;
-      }
-      let scrollTop = e.target.scrollTop;
-      for (let i = 0; i < this.topList.length; i++) {
-        let h1 = this.topList[i];
-        let h2 = this.topList[i + 1];
-        if (scrollTop >= h1 && scrollTop < h2) {
-          this.currentNum = i;
-          this.clickToId = 'to' + i;
-        }
-        //解决滚动到最后选项左侧不会选中
-        let length = this.topList.length;
-        if (scrollTop >= this.topList[length - 1]) {
-          this.currentNum = length - 1;
-          this.clickToId = 'to' + length - 1;
-        }
-      }
-    },
-    getNodesInfo() {
-      //获取节点为.right_title距离顶部的距离，返回值放在数组中
-      const query = uni.createSelectorQuery().in(this);
-      query
-          .selectAll('.right_title')
-          .boundingClientRect()
-          .exec(res => {
-            console.log(res);
-            let nodes = res[0];
-            let rel = [];
-            nodes.map(item => {
-              rel.push(item.top);
-            });
-            console.log(rel);
-            this.topList = rel;
-          });
-    }
-  },
-  //跳转回来页面刷新,清空数据
-  onShow() {
-    uni.$on('refresh', (data) => {
-      if (data.refresh) {
-        getProductSort().then(res =>{
-          this.sortList = res
-        });
-        //获取默认菜单
-        getProductList(null).then(res => {
+
+
+    //跳转回来页面刷新,清空数据
+    onShow() {
+      uni.$on('refresh', async (data) => {
+        if (data.refresh) {
+          this.sortList = await getProductSort()
+
+          //获取默认菜单
+          const res = getProductList()
           let sortId = res.list[0].sortId
           for (let i = 0; i < this.sortList.length; i++) {
             if (this.sortList[i].id === sortId) {
@@ -255,60 +192,110 @@ export default {
               this.index = sortId
             }
           }
-          this.productList = res.list
-        })
-        this.shopList = []
-        this.shopNum = 0
-        this.amount = 0
-        this.cahceIds.forEach(m =>{
-          localStorage.remove(m)
-        })
-      }
-    });
+          this.productListBySortId = res.list
+          this.shopCarList = []
+          this.shopNum = 0
+          this.amount = 0
+          this.cahceIds.forEach(m => {
+            localStorage.remove(m)
+          })
+        }
+      });
+    },
   },
 
-  onLoad(options) {
+  async onLoad(options) {
+    //二维码携带的参数
     if (options && options.scene) {
       const scene = decodeURIComponent(options.scene);
-      const param  = scene.split(":")
+      const param = scene.split(":")
+      console.log(param)
       this.shopId = param[1]
-      localStorage.set('tableId',param[2])
-      localStorage.set('shopId',param[1])
+      this.tableId = param[2]
+      localStorage.set('tableId', param[2])
+      localStorage.set('shopId', param[1])
     }
     //获取分类
-    getProductSort().then(res =>{
-      this.sortList = res
-    });
+    this.sortList = await getProductSort()
+
     //获取默认菜单
-    getProductList(null).then(res => {
-      let sortId = res.list[0].sortId
+    const res = await getProductList()
+      this.sortId = res[0].sortId
       for (let i = 0; i < this.sortList.length; i++) {
-        if (this.sortList[i].id === sortId) {
+        if (this.sortList[i].id === this.sortId) {
           this.currentNum = i
-          this.index = sortId
+          this.index = this.sortId
         }
       }
-      this.productList = res.list
-    })
+      this.productList = res
+
+
     let _that = this;
     uni.getSystemInfo({
-      success: function(res) {
+      success: function (res) {
         _that.windowHeight = res.windowHeight + 'px';
       }
     });
-    this.getNodesInfo();
+    //从缓存中读取购物车数据
+    if (localStorage.get("shopCarList") !== '') {
+      this.shopCarList = localStorage.get("shopCarList")
+      //购物车上的徽标数字
+      this.shopNum = this.shopCarList.reduce((accumulator, currentValue) => {
+        return accumulator + currentValue.selectNum;
+      }, 0);
+      //步进器的数字
+      this.productList.forEach(m => {
+        this.shopCarList.forEach(n => {
+          console.log(m, n)
+          if (m.id === n.id) {
+            m.selectNum = n.selectNum
+          }
+        })
+
+      })
+    }
+
+
+    this.ws = new websocketUtil("ws://127.0.0.1:12800/websocket/table/" + this.tableId, 1000)
+
+
+
+    this.ws.getMessage(res => {
+      const data = (JSON.parse(res.data))
+      console.log(data)
+      // if (data.length > 1){
+      //   console.log('..............')
+      // }
+      // if (res.data !== "1") {
+      //   res = JSON.parse(JSON.parse(res.data))
+      //   console.log(res)
+      //   console.log("======================同步购物车======================")
+      //   if (res.type === '+') {
+      //     this.shopNum++;
+      //     this.productList[res.productId].selectNum++;
+      //   } else {
+      //     this.shopNum--;
+      //     this.productList[res.productId].selectNum--;
+      //   }
+      //   const m = this.productList[res.productId];
+      //   this.updateShopList(m, res.type);
+      // }
+
+    })
   }
+
 };
 </script>
 
 <style>
 .a {
-  height: 50rpx;
+  height: 50 rpx;
 }
-.button{
+
+.button {
   border-radius: 50%;
-  width: 48rpx;
-  height: 48rpx;
+  width: 10 rpx;
+  height: 10 rpx;
   padding: 0;
   background-color: #007aff;
   display: flex;
@@ -316,22 +303,23 @@ export default {
   align-items: center;
   color: white;
   position: absolute;
-  top: 130rpx;
-  right: 50rpx;
+  top: 130 rpx;
+  right: 1 rpx;
 }
+
 .ld {
   display: flex;
 }
 
 .ld .left {
-  width: 130rpx;
+  width: 130 rpx;
   background-color: #f5f5f5;
 }
 
 .ld .left .title {
   text-align: center;
-  height: 70rpx;
-  line-height: 70rpx;
+  height: 70 rpx;
+  line-height: 70 rpx;
   color: #000000;
 }
 
@@ -346,14 +334,14 @@ export default {
 
 .ld .right .title {
   color: #dd524d;
-  padding: 20rpx;
+  padding: 20 rpx;
   font-weight: 700;
 }
 
 .ld .right .item {
-  padding-left: 20rpx;
+  padding-left: 20 rpx;
   display: inline-block;
-  height: 350rpx;
+  height: 350 rpx;
 }
 </style>
 

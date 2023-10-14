@@ -1,6 +1,6 @@
 import localStorage from "./localStorage";
 
-export const baseURL = 'http://127.0.0.1:12800'
+export const baseURL = 'http://127.0.0.1:12800/app'
 
 export const request = (options) => {
     return new Promise((resolve, reject) => {
@@ -14,7 +14,7 @@ export const request = (options) => {
             },
             success: (res) => {
                 if(res.data !== undefined){
-                    console.log(res.data)
+
                     let data  = res.data
                     // let startIndex = res.data.lastIndexOf("{", res.data.lastIndexOf("}") - 1);
                     // let trimmedResponse = res.data.slice(0, startIndex + 1);
@@ -24,13 +24,13 @@ export const request = (options) => {
                     if (data.code === 200) {
                         resolve(data.data)
                     } else {
-                        // if(res.data.code== 401){
-                        //     uni.navigateTo({
-                        //         url:'/login/login'
-                        //     })
-                        //     uni.clearStorageSync()
-                        // }
-                        // reject(res.data.msg)
+                        if(res.data.code== 401){
+                            uni.navigateTo({
+                                url:'/login/login'
+                            })
+                            uni.clearStorageSync()
+                        }
+                        reject(res.data.msg)
                     }
                     // 如果不满足上述判断就输出数据
                 }
@@ -43,5 +43,5 @@ export const request = (options) => {
                 reject(err)
             }
         })
-    })
+    }).catch()
 }
