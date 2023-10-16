@@ -12,7 +12,7 @@
   </van-dialog>
   <view>
     <!-- 显示导航栏加载动画 -->
-    <view  @click="onNavigateBack">
+    <view @click="onNavigateBack">
       <image style=" margin-top: 50rpx; height: 70rpx;width: 70rpx" src="../../static/images/back.png"></image>
     </view>
   </view>
@@ -65,7 +65,7 @@
 <script>
 import localStorage from "../../utils/localStorage";
 import {createOrder, submitOrder} from "../../api/order";
-
+import websocketUtil from "../../utils/websocketUtil"
 
 export default {
   name: "checkout",
@@ -76,8 +76,8 @@ export default {
       msgType: 'success',
       messageText: '这是一条成功提示',
       value: '',
-      show:false,
-      time: 30000 ,
+      show: false,
+      time: 30000,
       shopList: [],
       amount: 0,
       remark: '',
@@ -86,7 +86,7 @@ export default {
       icon: {
         active: '',
         normal: 'https://img01.yzcdn.cn/vant/user-active.png'
-      }
+      },
     }
   },
   methods: {
@@ -103,15 +103,15 @@ export default {
     //就当做已经付款，沒做支付功能
     onSubmit() {
       //倒计时时间
-      if(this.$refs.countDown.remain >0){
+      if (this.$refs.countDown.remain > 0) {
         submitOrder(this.orderNo, this.payType)
-        uni.$emit('refresh', { refresh: true });
+        uni.$emit('refresh', {refresh: true});
         uni.navigateBack()
-      }else {
+      } else {
         // 使用setTimeout函数延时执行代码
         this.$refs.message.open()
-        setTimeout(function(){
-          uni.$emit('refresh', { refresh: true });
+        setTimeout(function () {
+          uni.$emit('refresh', {refresh: true});
           uni.navigateBack()
         }, 500);
 
@@ -126,16 +126,31 @@ export default {
   },
 
   onLoad() {
-    const shopList = localStorage.get('shopList')
+    const shopList = localStorage.get('shopCarList')
     console.log(shopList)
     const amount = localStorage.get('amount')
     const tableId = localStorage.get('tableId')
-    const param = {shopList, amount, tableId}
+    const param = {createOrder: "", shopList, amount, tableId}
     this.shopList = shopList
     this.amount = amount
-    createOrder(param).then(res => {
-      this.orderNo = res
-      console.log(res)
+    console.log(tableId)
+    this.$socket = new websocketUtil("ws://127.0.0.1:12800/websocket/table/" + tableId, 1000)
+
+    this.$socket.send(JSON.stringify(param));
+
+    // createOrder(param).then(res => {
+    //   this.orderNo = res
+    //   console.log(res)
+    // })
+    this.$socket.getMessage(res => {
+      const data = (JSON.parse(res.data))
+
+      if (data !== 1) {
+
+        console.log("======================提交订单======================")
+
+
+      }
     })
   }
 }
@@ -143,7 +158,7 @@ export default {
 
 <style scoped>
 .img-icon {
-  height: 120rpx;
-  width: 120rpx;
+  height: 120 rpx;
+  width: 120 rpx;
 }
 </style>

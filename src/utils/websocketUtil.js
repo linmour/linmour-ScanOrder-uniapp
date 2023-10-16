@@ -1,36 +1,37 @@
-import localStorage from "./localStorage";
-
 class websocketUtil {
     constructor(url, time) {
-        this.is_open_socket = false //避免重复连接
-        this.url = url //地址
-        this.data = null
-        //心跳检测
-        this.timeout= time //多少秒执行检测
-        this.heartbeatInterval= null //检测服务器端是否还活着
-        this.reconnectTimeOut= null //重连之后多久再次重连
+        if (url !== null) {
+            this.is_open_socket = false //避免重复连接
+            this.url = url //地址
+            this.data = null
+            //心跳检测
+            this.timeout = time //多少秒执行检测
+            this.heartbeatInterval = null //检测服务器端是否还活着
+            this.reconnectTimeOut = null //重连之后多久再次重连
 
-        try {
-            return this.connectSocketInit()
-        } catch (e) {
-            console.log('catch');
-            this.is_open_socket = false
-            this.reconnect();
+            try {
+                return this.connectSocketInit()
+            } catch (e) {
+                console.log('catch');
+                this.is_open_socket = false
+                this.reconnect();
+            }
         }
+
     }
 
     // 进入这个页面的时候创建websocket连接【整个页面随时使用】
     connectSocketInit() {
         this.socketTask = uni.connectSocket({
             url: this.url,
-            success:()=>{
+            success: () => {
                 console.log("正准备建立websocket中...");
                 // 返回实例
                 return this.socketTask
             },
         });
         this.socketTask.onOpen((res) => {
-            const a = {sync:""}
+            const a = {sync: ""}
             this.send(JSON.stringify(a))
             console.log("WebSocket连接正常！");
             clearTimeout(this.reconnectTimeOut)
@@ -57,35 +58,51 @@ class websocketUtil {
     }
 
     //发送消息
-    send(value){
-        // 注：只有连接正常打开中 ，才能正常成功发送消息
-        this.socketTask.send({
-            data: value,
-            async success() {
-                console.log("消息发送成功");
-            },
-        });
+    send(value) {
+        if (!this.is_open_socket) {
+            // 等待连接成功后再发送消息
+            const interval = setInterval(() => {
+                if (this.is_open_socket) {
+                    clearInterval(interval);
+                    this.socketTask.send({
+                        data: value,
+                        async success() {
+                            console.log("消息发送成功");
+                        },
+                    });
+                }
+            }, 1000); // 每1秒检查一次是否连接成功
+        } else {
+            this.socketTask.send({
+                data: value,
+                async success() {
+                    console.log("消息发送成功");
+                },
+            });
+        }
     }
+
     //开启心跳检测
-    start(){
-        this.heartbeatInterval = setTimeout(()=>{
-            this.data={"test":"1"}
-            // console.log(this.data)
+    start() {
+        this.heartbeatInterval = setTimeout(() => {
+            this.data = {"test": "1"}
             this.send(JSON.stringify(this.data));
             console.log("测试连接")
-        },this.timeout)
+        }, this.timeout)
     }
+
     //重新连接
-    reconnect(){
+    reconnect() {
         //停止发送心跳
         clearInterval(this.heartbeatInterval)
         //如果不是人为关闭的话，进行重连
-        if(!this.is_open_socket){
-            this.reconnectTimeOut = setTimeout(()=>{
+        if (!this.is_open_socket) {
+            this.reconnectTimeOut = setTimeout(() => {
                 this.connectSocketInit();
-            },3000)
+            }, 3000)
         }
     }
+
     //外部获取消息
     getMessage(callback) {
         this.socketTask.onMessage((res) => {

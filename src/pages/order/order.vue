@@ -82,6 +82,7 @@ import localStorage from "../../utils/localStorage.js";
 import websocketUtil from "../../utils/websocketUtil"
 
 
+
 export default {
   data() {
     return {
@@ -102,7 +103,6 @@ export default {
       windowHeight: '0rpx',
       currentNum: 0,
       index: '',
-      ws: Object,
       tableId: 0,
     };
   },
@@ -137,7 +137,7 @@ export default {
       }
       let flag = true;
       //同步购物车信息，对比购物车是否有这种物品，如果有就 +1 ,没有就加入数组
-      if (this.shopCarList !== ''){
+      if (this.shopCarList !== '') {
         this.shopCarList.forEach(function (obj, j) {
           if (m.id === obj.id) {
             this.shopCarList[j].selectNum = m.selectNum;
@@ -153,19 +153,19 @@ export default {
     },
 
     add(index) {
-      const a = {change:"",tableId: this.tableId, productId: index, type: "+"}
-      this.ws.send(JSON.stringify(a))
+      const a = {change: "", tableId: this.tableId, productId: index, type: "+"}
+      this.$socket.send(JSON.stringify(a))
     },
     minus(index) {
-      if (this.productList[index].selectNum >0){
-        const a = {change:"",tableId: this.tableId, productId: index, type: "-"}
-        this.ws.send(JSON.stringify(a))
+      if (this.productList[index].selectNum > 0) {
+        const a = {change: "", tableId: this.tableId, productId: index, type: "-"}
+        this.$socket.send(JSON.stringify(a))
       }
 
     },
     select(index) {
-      const a = {change:"",tableId: this.tableId, productId: index, type: "+"}
-      this.ws.send(JSON.stringify(a))
+      const a = {change: "", tableId: this.tableId, productId: index, type: "+"}
+      this.$socket.send(JSON.stringify(a))
     },
     setValue(index, val) {
       this.productListBySortId[index].selectNum = val;
@@ -202,6 +202,8 @@ export default {
         }
       });
     },
+
+
   },
 
   async onLoad(options) {
@@ -220,14 +222,14 @@ export default {
 
     //获取默认菜单
     const res = await getProductList()
-      this.sortId = res[0].sortId
-      for (let i = 0; i < this.sortList.length; i++) {
-        if (this.sortList[i].id === this.sortId) {
-          this.currentNum = i
-          this.index = this.sortId
-        }
+    this.sortId = res[0].sortId
+    for (let i = 0; i < this.sortList.length; i++) {
+      if (this.sortList[i].id === this.sortId) {
+        this.currentNum = i
+        this.index = this.sortId
       }
-      this.productList = res
+    }
+    this.productList = res
 
 
     let _that = this;
@@ -236,51 +238,29 @@ export default {
         _that.windowHeight = res.windowHeight + 'px';
       }
     });
-    //从缓存中读取购物车数据
-    if (localStorage.get("shopCarList") !== '') {
-      this.shopCarList = localStorage.get("shopCarList")
-      //购物车上的徽标数字
-      this.shopNum = this.shopCarList.reduce((accumulator, currentValue) => {
-        return accumulator + currentValue.selectNum;
-      }, 0);
-      //步进器的数字
-      this.productList.forEach(m => {
-        this.shopCarList.forEach(n => {
-          console.log(m, n)
-          if (m.id === n.id) {
-            m.selectNum = n.selectNum
+
+
+    this.$socket = new websocketUtil("ws://127.0.0.1:12800/websocket/table/" + this.tableId, 1000)
+
+    this.$socket.getMessage(res => {
+      const data = (JSON.parse(res.data))
+
+      if (data  !== 1) {
+
+        console.log("======================同步购物车======================")
+        data.forEach(res =>{
+          if (res.type === '+') {
+            this.shopNum++;
+            this.productList[res.productId].selectNum++;
+          } else {
+            this.shopNum--;
+            this.productList[res.productId].selectNum--;
           }
+          const m = this.productList[res.productId];
+          this.updateShopList(m, res.type);
         })
 
-      })
-    }
-
-
-    this.ws = new websocketUtil("ws://127.0.0.1:12800/websocket/table/" + this.tableId, 1000)
-
-
-
-    this.ws.getMessage(res => {
-      const data = (JSON.parse(res.data))
-      console.log(data)
-      // if (data.length > 1){
-      //   console.log('..............')
-      // }
-      // if (res.data !== "1") {
-      //   res = JSON.parse(JSON.parse(res.data))
-      //   console.log(res)
-      //   console.log("======================同步购物车======================")
-      //   if (res.type === '+') {
-      //     this.shopNum++;
-      //     this.productList[res.productId].selectNum++;
-      //   } else {
-      //     this.shopNum--;
-      //     this.productList[res.productId].selectNum--;
-      //   }
-      //   const m = this.productList[res.productId];
-      //   this.updateShopList(m, res.type);
-      // }
-
+      }
     })
   }
 
