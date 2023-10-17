@@ -127,14 +127,11 @@ export default {
 
   onLoad() {
     const shopList = localStorage.get('shopCarList')
-    console.log(shopList)
     const amount = localStorage.get('amount')
     const tableId = localStorage.get('tableId')
     const param = {createOrder: "", shopList, amount, tableId}
     this.shopList = shopList
     this.amount = amount
-    console.log(tableId)
-    this.$socket = new websocketUtil("ws://127.0.0.1:12800/websocket/table/" + tableId, 1000)
 
     this.$socket.send(JSON.stringify(param));
 
@@ -143,11 +140,14 @@ export default {
     //   console.log(res)
     // })
     this.$socket.getMessage(res => {
+
+
       const data = (JSON.parse(res.data))
-
-      if (data !== 1) {
-
-        console.log("======================提交订单======================")
+      console.log(data)
+      if (typeof data === "string") {
+        if (data === "订单创建成功")  {
+          console.log("*-*-*-*")
+        }
 
 
       }

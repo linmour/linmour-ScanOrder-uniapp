@@ -31,7 +31,7 @@ class websocketUtil {
             },
         });
         this.socketTask.onOpen((res) => {
-            const a = {sync: ""}
+            const a = {sync: this.url}
             this.send(JSON.stringify(a))
             console.log("WebSocket连接正常！");
             clearTimeout(this.reconnectTimeOut)
@@ -108,6 +108,19 @@ class websocketUtil {
         this.socketTask.onMessage((res) => {
             return callback(res)
         })
+    }
+
+    changeUrl(url){
+        this.url = url
+        //表示这个对象还没连接
+        if(this.is_open_socket){
+            //断开后会自己重连,这样确保后端不会有多个webstock对象
+            this.socketTask.close()
+        }else {
+            this.connectSocketInit();
+        }
+
+
     }
 
 }

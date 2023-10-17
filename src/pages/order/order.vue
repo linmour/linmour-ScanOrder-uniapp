@@ -82,7 +82,6 @@ import localStorage from "../../utils/localStorage.js";
 import websocketUtil from "../../utils/websocketUtil"
 
 
-
 export default {
   data() {
     return {
@@ -240,15 +239,15 @@ export default {
     });
 
 
-    this.$socket = new websocketUtil("ws://127.0.0.1:12800/websocket/table/" + this.tableId, 1000)
+    this.$socket.changeUrl("ws://127.0.0.1:12800/websocket/table/" + this.tableId)
+
 
     this.$socket.getMessage(res => {
+
       const data = (JSON.parse(res.data))
-
-      if (data  !== 1) {
-
+      if (typeof data === "object") {
         console.log("======================同步购物车======================")
-        data.forEach(res =>{
+        data.forEach(res => {
           if (res.type === '+') {
             this.shopNum++;
             this.productList[res.productId].selectNum++;
@@ -261,6 +260,8 @@ export default {
         })
 
       }
+
+
     })
   }
 
