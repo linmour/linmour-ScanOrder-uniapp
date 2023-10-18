@@ -1,6 +1,6 @@
 <template>
   <view>
-    <van-notice-bar @close="m" v-if="a.length === 0" mode="closeable" text="没有选择商品"/>
+    <van-notice-bar v-if="notice" mode="closeable" text="没有选择商品"/>
 
     <view class="ld">
       <view class="left">
@@ -79,14 +79,12 @@
 import {getProductList, getProductSort} from "../../api/product/index";
 import shopCarImg from '@/static/images/shop.png';
 import localStorage from "../../utils/localStorage.js";
-import websocketUtil from "../../utils/websocketUtil"
 
 
 export default {
   data() {
     return {
-      a: [1],
-      cahceIds: [],
+      notice: false,
       amount: 0,
       show: false,
       shopNum: 0,
@@ -109,9 +107,6 @@ export default {
     onChange(sortId) {
       this.sortId = sortId
     },
-    m() {
-      this.a = [1]
-    },
     cancel() {
       this.show = false
     },
@@ -119,8 +114,14 @@ export default {
       this.show = true
     },
     submit() {
+      if (this.amount === 0) {
+        this.notice = true
+
+      }
+      setTimeout(() => {
+        this.notice = false
+      }, 1000);
       if (this.shopCarList.length > 0) {
-        localStorage.set('shopList', this.a)
         localStorage.set('amount', this.amount)
         uni.navigateTo({
           url: `/pages/order/checkout`
@@ -195,9 +196,6 @@ export default {
           this.shopCarList = []
           this.shopNum = 0
           this.amount = 0
-          this.cahceIds.forEach(m => {
-            localStorage.remove(m)
-          })
         }
       });
     },
@@ -242,9 +240,13 @@ export default {
     this.$socket.changeUrl("ws://127.0.0.1:12800/websocket/table/" + this.tableId)
 
 
+    /**
+     * 全局中使用同一个 WebSocket 对象，那么无论在哪个页面添加监听事件，该监听事件都能监听到后端发送的 WebSocket 消息
+     */
     this.$socket.getMessage(res => {
 
       const data = (JSON.parse(res.data))
+
       if (typeof data === "object") {
         console.log("======================同步购物车======================")
         data.forEach(res => {
@@ -259,6 +261,23 @@ export default {
           this.updateShopList(m, res.type);
         })
 
+      } else if (typeof data === "string") {
+        if (data === "订单创建成功") {
+          const a = {clear: ""}
+          //通知后端可以提交新的订单了
+          this.$socket.send(JSON.stringify(a))
+          localStorage.remove("shopCarList")
+          localStorage.remove("amount")
+          this.shopCarList = []
+          this.shopNum = 0
+          this.productList.forEach(m => m.selectNum = 0)
+          this.amount = 0
+
+
+          console.log(data)
+        } else if (data === "已有人提交订单，请稍后") {
+          console.log(data)
+        }
       }
 
 
