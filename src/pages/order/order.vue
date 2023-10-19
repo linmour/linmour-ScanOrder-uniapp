@@ -246,7 +246,7 @@ export default {
     this.$socket.getMessage(res => {
 
       const data = (JSON.parse(res.data))
-
+      console.log(res,"-------W")
       if (typeof data === "object") {
         console.log("======================同步购物车======================")
         data.forEach(res => {
@@ -258,6 +258,7 @@ export default {
             this.productList[res.productId].selectNum--;
           }
           const m = this.productList[res.productId];
+          console.log("-----------")
           this.updateShopList(m, res.type);
         })
 
@@ -275,6 +276,7 @@ export default {
 
 
           console.log(data)
+
         } else if (data === "已有人提交订单，请稍后") {
           console.log(data)
         }
