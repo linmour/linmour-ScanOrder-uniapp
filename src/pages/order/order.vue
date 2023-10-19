@@ -258,7 +258,6 @@ export default {
             this.productList[res.productId].selectNum--;
           }
           const m = this.productList[res.productId];
-          console.log("-----------")
           this.updateShopList(m, res.type);
         })
 
