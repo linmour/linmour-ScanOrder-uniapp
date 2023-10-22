@@ -1,4 +1,19 @@
 <template>
+
+  <view>
+    <!-- 提示信息弹窗 -->
+    <uni-popup ref="message" type="message">
+      <uni-popup-message :type="msgType" :message="messageText" :duration="2000"></uni-popup-message>
+    </uni-popup>
+  </view>
+
+  <view>
+    <!-- 提示窗示例 -->
+    <uni-popup ref="alertDialog">
+      <uni-popup-dialog ></uni-popup-dialog>
+    </uni-popup>
+  </view>
+
   <view>
     <van-notice-bar v-if="notice" mode="closeable" text="没有选择商品"/>
 
@@ -101,6 +116,10 @@ export default {
       currentNum: 0,
       index: '',
       tableId: 0,
+      type: 'center',
+      msgType: 'success',
+      messageText: '这是一条成功提示',
+      value: ''
     };
   },
   methods: {
@@ -174,6 +193,11 @@ export default {
       uni.navigateTo({
         url: `/pages/order/detail`
       })
+    },
+    messageToggle(type,msg) {
+      this.msgType = type
+      this.messageText = msg
+      this.$refs.message.open()
     },
 
 
@@ -272,14 +296,19 @@ export default {
           this.shopNum = 0
           this.productList.forEach(m => m.selectNum = 0)
           this.amount = 0
-
-        } else if (data === "已有人提交订单，请稍后") {
-          console.log(data)
-        }else {
-          console.log(data)
-        }
           uni.$emit('refresh', {refresh: true});
           uni.navigateBack()
+          this.messageToggle("success",data)
+
+        } else if (data === "已有人提交订单，请稍后") {
+          this.messageToggle("warn",data)
+
+        }else if (data === '订单提交失败'){
+          uni.$emit('refresh', {refresh: true});
+          uni.navigateBack()
+          this.messageToggle("error",data)
+        }
+
 
 
 
