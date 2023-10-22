@@ -1,15 +1,14 @@
 <template>
-<!--  <van-dialog-->
-<!--      :use-slot="true"-->
-<!--      title="标题"-->
-<!--      :show="show"-->
-<!--      show-cancel-button-->
-<!--      confirm-button-open-type="getUserInfo"-->
-<!--      @close="onClose"-->
-<!--      @getuserinfo="getUserInfo"-->
-<!--  >-->
-<!--    <view>返回就取消订单</view>-->
-<!--  </van-dialog>-->
+  <van-dialog
+      :use-slot="true"
+      title="标题"
+      :show="show"
+      show-cancel-button
+      confirm-button-open-type="getUserInfo"
+      @close="onClose"
+      @getuserinfo="getUserInfo"
+  >
+  </van-dialog>
 <!--  <view>-->
 <!--    &lt;!&ndash; 显示导航栏加载动画 &ndash;&gt;-->
 <!--    <view @click="onNavigateBack">-->
@@ -33,7 +32,6 @@
 <!--    />-->
 <!--  </view>-->
 
-<!--  <van-field v-model="remark" label="备注" placeholder="如有需要请填写"/>-->
 <!--  <van-radio-group v-model="payType" @change="onChange">-->
 <!--    <van-radio :use-icon-slot="true" :value="payType" name="1" checked-color="#ee0a24">-->
 <!--      支付宝支付-->
@@ -68,6 +66,11 @@
         :thumb="it.picture"
     />
   </view>
+{{remark}}
+<!--  <van-field v-model="remark" label="备注" placeholder="如有需要请填写"/>-->
+  <uni-easyinput v-model="remark" placeholder="请输入内容"></uni-easyinput>
+
+
   <van-goods-action>
     <view style="width: 300rpx"></view>
     <van-goods-action-button color="#656564" type="warning" text="继续点餐" @click="order"/>
@@ -79,6 +82,7 @@
 
 <script>
 import localStorage from "../../utils/localStorage";
+import {checkout} from "../../api/order";
 // import {createOrder, submitOrder} from "../../api/order";
 // import websocketUtil from "../../utils/websocketUtil"
 
@@ -94,6 +98,7 @@ export default {
       show: false,
       time: 30000,
       shopCarList: [],
+      tableId:0,
       amount: 0,
       remark: '',
       orderNo: '',
@@ -106,8 +111,13 @@ export default {
   },
   methods: {
     order(){
-      uni.$emit('refresh', {refresh: true});
-      uni.navigateBack()
+      const shopCarList = this.shopCarList
+      const amount = this.amount
+      const tableId = this.tableId
+      const  remark = this.remark
+      const param = {createOrder: "",shopCarList , amount, tableId,remark}
+      this.$socket.send(JSON.stringify(param));
+
     },
     getUserInfo(event) {
       uni.navigateBack()
@@ -121,22 +131,8 @@ export default {
 
     //就当做已经付款，沒做支付功能
     onSubmit() {
-      //倒计时时间
-      // if (this.$refs.countDown.remain > 0) {
-      //   // submitOrder(this.orderNo, this.payType)
-      //   uni.$emit('refresh', {refresh: true});
-      //   uni.navigateBack()
-      // } else {
-      //   // 使用setTimeout函数延时执行代码
-      //   this.$refs.message.open()
-      //   setTimeout(function () {
-      //     uni.$emit('refresh', {refresh: true});
-      //     uni.navigateBack()
-      //   }, 500);
-      //
-      //
-      // }
-
+      console.log(this.tableId,this.payType)
+      checkout(this.tableId, this.payType)
     },
     onChange(event) {
       this.payType = event.detail
@@ -145,13 +141,10 @@ export default {
   },
 
   onLoad() {
-    const shopCarList = localStorage.get('shopCarList')
-    const amount = localStorage.get('amount')
-    const tableId = localStorage.get('tableId')
-    const param = {createOrder: "", shopCarList, amount, tableId}
-    this.shopCarList = shopCarList
-    this.amount = amount
-    this.$socket.send(JSON.stringify(param));
+    this.shopCarList = localStorage.get('shopCarList')
+    this.amount = localStorage.get('amount')
+    this.tableId = localStorage.get('tableId')
+
 
   }
 }

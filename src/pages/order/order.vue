@@ -262,7 +262,7 @@ export default {
         })
 
       } else if (typeof data === "string") {
-        if (data === "订单创建成功") {
+        if (data === "订单提交成功") {
           const a = {clear: ""}
           //通知后端可以提交新的订单了
           this.$socket.send(JSON.stringify(a))
@@ -273,13 +273,19 @@ export default {
           this.productList.forEach(m => m.selectNum = 0)
           this.amount = 0
 
-
-          console.log(data)
-
         } else if (data === "已有人提交订单，请稍后") {
           console.log(data)
+        }else {
+          console.log(data)
         }
+          uni.$emit('refresh', {refresh: true});
+          uni.navigateBack()
+
+
+
+
       }
+
 
 
     })

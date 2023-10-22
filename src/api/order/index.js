@@ -4,6 +4,6 @@ export const createOrder = (param) => request({url: '/order/order/createOrder' ,
     data:param
 })
 
-export const submitOrder = (orderNo,payType) => request({url: '/order/order/submitOrder'  ,method: 'post',
-    data: {orderNo,payType}
+export const checkout = (tableId,payType) => request({url: '/order/order/checkout'  ,method: 'post',
+    data: {tableId,payType}
 })
