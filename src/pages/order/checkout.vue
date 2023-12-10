@@ -111,6 +111,7 @@ export default {
   },
   methods: {
     order(){
+      console.log("*-*--")
       const shopCarList = this.shopCarList
       const amount = this.amount
       const tableId = this.tableId
@@ -131,8 +132,9 @@ export default {
 
     //就当做已经付款，沒做支付功能
     onSubmit() {
-      console.log(this.tableId,this.payType)
-      checkout(this.tableId, this.payType)
+      this.order()
+      const  openid = localStorage.get("openid")
+      checkout(this.tableId, this.payType,openid)
     },
     onChange(event) {
       this.payType = event.detail
@@ -144,8 +146,6 @@ export default {
     this.shopCarList = localStorage.get('shopCarList')
     this.amount = localStorage.get('amount')
     this.tableId = localStorage.get('tableId')
-
-
   }
 }
 </script>

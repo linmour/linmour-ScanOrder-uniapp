@@ -3,28 +3,23 @@
 
 
 
-
-
-
-    <view>
-      <!-- 提示信息弹窗 -->
-      <uni-popup ref="message" type="message">
-        <uni-popup-message :type="msgType" :message="messageText" :duration="2000"></uni-popup-message>
-      </uni-popup>
-    </view>
-
     <view>
       <!-- 提示窗示例 -->
-      <uni-popup ref="alertDialog">
-        <uni-popup-dialog ></uni-popup-dialog>
+      <uni-popup ref="alertDialog" type="dialog">
+        <uni-popup-dialog :type="msgType" cancelText="关闭" confirmText="同意" title="通知" content="欢迎使用 uni-popup!" @confirm="dialogConfirm"
+                          @close="dialogClose"></uni-popup-dialog>
       </uni-popup>
     </view>
+
+
 
 
   </view>
 </template>
 
 <script>
+import localStorage from "../../utils/localStorage";
+
 export default {
   data() {
     return {
@@ -37,15 +32,23 @@ export default {
   methods: {
 
 
-    messageToggle(type) {
-      this.msgType = type
-      this.messageText = `这是一条${type}消息提示`
-      this.$refs.message.open()
+    dialogConfirm() {
+      console.log('点击确认')
+      // this.messageText = `点击确认了
     },
+
+    dialogClose() {
+      console.log('点击关闭')
+    },
+
+  },
+  onLoad() {
+    this.$refs.alertDialog.open()
 
   }
 }
 </script>
+
 
 <style lang="scss">
 @mixin flex {
@@ -171,4 +174,5 @@ export default {
   color: #333;
 }
 </style>
+
 

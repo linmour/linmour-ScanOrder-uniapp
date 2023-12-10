@@ -8,9 +8,17 @@
   </view>
 
   <view>
-    <!-- 提示窗示例 -->
+    <!-- 顶部提示窗示例 -->
     <uni-popup ref="alertDialog">
       <uni-popup-dialog ></uni-popup-dialog>
+    </uni-popup>
+  </view>
+
+  <view>
+    <!-- 授权提示窗示例 -->
+    <uni-popup ref="alertDialog" type="dialog">
+      <uni-popup-dialog :type="msgType" cancelText="关闭" confirmText="同意" title="需要获取授权" content="" @confirm="Login"
+                        @close="dialogClose"></uni-popup-dialog>
     </uni-popup>
   </view>
 
@@ -94,6 +102,7 @@
 import {getProductList, getProductSort} from "../../api/product/index";
 import shopCarImg from '@/static/images/shop.png';
 import localStorage from "../../utils/localStorage.js";
+import {login} from "../../api/login";
 
 
 export default {
@@ -123,6 +132,7 @@ export default {
     };
   },
   methods: {
+
     onChange(sortId) {
       this.sortId = sortId
     },
@@ -135,7 +145,6 @@ export default {
     submit() {
       if (this.amount === 0) {
         this.notice = true
-
       }
       setTimeout(() => {
         this.notice = false
@@ -172,18 +181,18 @@ export default {
     },
 
     add(index) {
-      const a = {change: "", tableId: this.tableId, productId: index, type: "+"}
+      const a = {change: "",  productId: index, type: "+"}
       this.$socket.send(JSON.stringify(a))
     },
     minus(index) {
       if (this.productList[index].selectNum > 0) {
-        const a = {change: "", tableId: this.tableId, productId: index, type: "-"}
+        const a = {change: "",  productId: index, type: "-"}
         this.$socket.send(JSON.stringify(a))
       }
 
     },
     select(index) {
-      const a = {change: "", tableId: this.tableId, productId: index, type: "+"}
+      const a = {change: "", productId: index, type: "+"}
       this.$socket.send(JSON.stringify(a))
     },
     setValue(index, val) {
@@ -224,10 +233,57 @@ export default {
       });
     },
 
+    getUserInfo() {
+      return new Promise((resolve, reject) => {
+        wx.getUserProfile({
+          lang: 'zh_CN',
+          desc: '用户登录',
+          success: (res) => {
+            resolve(res.userInfo)
+          },
+          fail: (err) => {
+            reject(err)
+          }
+        })
+      })
+    },
+
+    getLogin() {
+      return new Promise((resolve, reject) => {
+        wx.login({
+          success(res) {
+            resolve(res.code)
+          },
+          fail: (err) => {
+            reject(err)
+          }
+        })
+      })
+    },
+
+    Login() {
+      let userInfo = this.getUserInfo();
+      let wxCode = this.getLogin();
+      Promise.all([userInfo, wxCode]).then((res) => {
+        //带上信息去后端请求登录
+        login(res[1],res[0].nickName,res[0].avatarUrl).then((res)=>{
+          localStorage.set("openid",res)
+        })
+      }).catch(err => {
+
+      })
+    },
+
+    dialogClose() {
+      console.log('点击关闭')
+    },
 
   },
 
   async onLoad(options) {
+    if (localStorage.get("openid") === "")
+    this.$refs.alertDialog.open()
+
     //二维码携带的参数
     if (options && options.scene) {
       const scene = decodeURIComponent(options.scene);
@@ -238,6 +294,7 @@ export default {
       localStorage.set('tableId', param[2])
       localStorage.set('shopId', param[1])
     }
+
     //获取分类
     this.sortList = await getProductSort()
 
@@ -308,17 +365,10 @@ export default {
           uni.navigateBack()
           this.messageToggle("error",data)
         }
-
-
-
-
-
       }
-
-
-
     })
-  }
+  },
+
 
 };
 </script>
