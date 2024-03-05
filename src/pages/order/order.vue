@@ -10,33 +10,28 @@
   <view>
     <!-- 顶部提示窗示例 -->
     <uni-popup ref="alertDialog">
-      <uni-popup-dialog ></uni-popup-dialog>
+      <uni-popup-dialog></uni-popup-dialog>
     </uni-popup>
   </view>
 
-  <view>
-    <!-- 授权提示窗示例 -->
-    <uni-popup ref="alertDialog" type="dialog">
-      <uni-popup-dialog :type="msgType" cancelText="关闭" confirmText="同意" title="需要获取授权" content="" @confirm="Login"
-                        @close="dialogClose"></uni-popup-dialog>
-    </uni-popup>
-  </view>
+<!--  <view>-->
+<!--    &lt;!&ndash; 授权提示窗示例 &ndash;&gt;-->
+<!--    <uni-popup ref="alertDialog" type="dialog">-->
+<!--      <uni-popup-dialog :type="msgType" cancelText="关闭" confirmText="同意" title="需要获取授权" content="" @confirm="Login" @close="dialogClose"></uni-popup-dialog>-->
+<!--    </uni-popup>-->
+<!--  </view>-->
 
   <view>
     <van-notice-bar v-if="notice" mode="closeable" text="没有选择商品"/>
-
     <view class="ld">
       <view class="left">
-
         <van-sidebar>
           <view v-for="(item, index) in sortList" :key="index">
             <van-sidebar-item :title="item.sort" custom-class="cellTab" @click="onChange(item.id)"/>
           </view>
-
         </van-sidebar>
       </view>
       <view class="right" style="margin-left: 20rpx">
-
         <view v-for="(item, index) in productList" :key="index">
           <van-card
               v-if="item.sortId === sortId"
@@ -63,7 +58,6 @@
             </template>
 
           </van-card>
-          <view style="height: 5rpx;color: #999999"> {{ this.tableId }}</view>
         </view>
 
       </view>
@@ -181,12 +175,12 @@ export default {
     },
 
     add(index) {
-      const a = {change: "",  productId: index, type: "+"}
+      const a = {change: "", productId: index, type: "+"}
       this.$socket.send(JSON.stringify(a))
     },
     minus(index) {
       if (this.productList[index].selectNum > 0) {
-        const a = {change: "",  productId: index, type: "-"}
+        const a = {change: "", productId: index, type: "-"}
         this.$socket.send(JSON.stringify(a))
       }
 
@@ -203,7 +197,7 @@ export default {
         url: `/pages/order/detail`
       })
     },
-    messageToggle(type,msg) {
+    messageToggle(type, msg) {
       this.msgType = type
       this.messageText = msg
       this.$refs.message.open()
@@ -266,8 +260,8 @@ export default {
       let wxCode = this.getLogin();
       Promise.all([userInfo, wxCode]).then((res) => {
         //带上信息去后端请求登录
-        login(res[1],res[0].nickName,res[0].avatarUrl).then((res)=>{
-          localStorage.set("openid",res)
+        login(res[1], res[0].nickName, res[0].avatarUrl).then((res) => {
+          localStorage.set("openid", res)
         })
       }).catch(err => {
 
@@ -282,7 +276,7 @@ export default {
 
   async onLoad(options) {
     if (localStorage.get("openid") === "")
-    this.$refs.alertDialog.open()
+      this.$refs.alertDialog.open()
 
     //二维码携带的参数
     if (options && options.scene) {
@@ -327,7 +321,7 @@ export default {
     this.$socket.getMessage(res => {
 
       const data = (JSON.parse(res.data))
-      console.log(res,"-------W")
+      console.log(res, "-------W")
       if (typeof data === "object") {
         console.log("======================同步购物车======================")
         data.forEach(res => {
@@ -355,15 +349,15 @@ export default {
           this.amount = 0
           uni.$emit('refresh', {refresh: true});
           uni.navigateBack()
-          this.messageToggle("success",data)
+          this.messageToggle("success", data)
 
         } else if (data === "已有人提交订单，请稍后") {
-          this.messageToggle("warn",data)
+          this.messageToggle("warn", data)
 
-        }else if (data === '订单提交失败'){
+        } else if (data === '订单提交失败') {
           uni.$emit('refresh', {refresh: true});
           uni.navigateBack()
-          this.messageToggle("error",data)
+          this.messageToggle("error", data)
         }
       }
     })

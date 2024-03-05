@@ -66,15 +66,15 @@
         :thumb="it.picture"
     />
   </view>
-{{remark}}
-<!--  <van-field v-model="remark" label="备注" placeholder="如有需要请填写"/>-->
-  <uni-easyinput v-model="remark" placeholder="请输入内容"></uni-easyinput>
+<!--{{remark}}-->
+<!--&lt;!&ndash;  <van-field v-model="remark" label="备注" placeholder="如有需要请填写"/>&ndash;&gt;-->
+<!--  <uni-easyinput v-model="remark" placeholder="请输入内容"></uni-easyinput>-->
 
 
   <van-goods-action>
     <view style="width: 300rpx"></view>
-    <van-goods-action-button color="#656564" type="warning" text="继续点餐" @click="order"/>
-    <van-goods-action-button color="#be99ff" type="danger" text="结账"  @click="onSubmit"/>
+    <van-goods-action-button color="#656564" type="warning" text="继续点餐" @click="createOrder"/>
+    <van-goods-action-button color="#be99ff" type="danger" text="结账"  @click="checkout"/>
   </van-goods-action>
 
 
@@ -110,9 +110,10 @@ export default {
     }
   },
   methods: {
-    order(){
-      console.log("*-*--")
-      const shopCarList = this.shopCarList
+    createOrder(){
+      const shopCarList = this.shopCarList.filter(function(obj) {
+        return obj.selectNum !== 0;
+      });
       const amount = this.amount
       const tableId = this.tableId
       const  remark = this.remark
@@ -131,8 +132,8 @@ export default {
     },
 
     //就当做已经付款，沒做支付功能
-    onSubmit() {
-      this.order()
+    checkout() {
+      this.createOrder()
       const  openid = localStorage.get("openid")
       checkout(this.tableId, this.payType,openid)
     },
