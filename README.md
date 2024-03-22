@@ -4,7 +4,7 @@
 点餐小程序用户端，可以实现多人同时点餐
 
 #### 软件架构
-用的是 vue + uniapp + vant,开发软件用的是webstorm和微信开发者工具
+用的是 uniapp ,开发软件用的是hbuilderx和微信开发者工具
 
 
 
