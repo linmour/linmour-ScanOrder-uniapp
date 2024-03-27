@@ -23,10 +23,10 @@
 					<!-- goods begin -->
 					<list-cell :hover="false" padding="50rpx 30rpx">
 						<view class="w-100 d-flex flex-column position-relative" style="margin-bottom: -40rpx;">
-							<view class="w-100 d-flex align-items-center mb-40" v-for="(good, index) in order.productDetailDtos" :key="index">
+							<view class="w-100 d-flex align-items-center mb-40" v-for="(good, index) in order.orderItems" :key="index">
 								<view class="d-flex flex-column w-60 overflow-hidden">
 									<view class="font-size-lg text-color-base mb-10 text-truncate">{{ good.name }}</view>
-									<view class="font-size-sm text-color-assist text-truncate">{{ good.property }}</view>
+									<view class="font-size-sm text-color-assist text-truncate" v-if="good.propsText != null">{{ good.propsText }}</view>
 								</view>
 								<view class="d-flex w-40 align-items-center justify-content-between pl-30">
 									<view class="font-size-base text-color-base">x{{ good.quantity }}</view>

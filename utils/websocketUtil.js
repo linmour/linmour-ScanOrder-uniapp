@@ -3,7 +3,6 @@ class websocketUtil {
 		if (url !== null) {
 			let a = uni.getStorageSync('shopId')
 			let b = uni.getStorageSync('tableId')
-			console.log(a,b,"========================================================================")
 			this.is_open_socket = false //避免重复连接
 			this.url = "ws://127.0.0.1:12800/websocket/shop/"+ a  +"/table/" + b  //地址
 			this.data = null

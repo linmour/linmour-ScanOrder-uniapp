@@ -72,7 +72,7 @@
 								</view>
 								<view
 									class="d-flex flex-fill justify-content-between align-items-center text-color-base font-size-lg">
-									<view>x{{ item.number }}</view>
+									<view>x{{ item.quantity }}</view>
 									<view>￥{{ item.price }}</view>
 								</view>
 							</view>
@@ -212,10 +212,10 @@
 		computed: {
 			...mapState(['orderType', 'address', 'store']),
 			total() {
-				return this.cart.reduce((acc, cur) => acc + cur.number * cur.price, 0)
+				return this.cart.reduce((acc, cur) => acc + cur.quantity * cur.price, 0)
 			},
 			amount() {
-				return this.cart.reduce((acc, cur) => acc + cur.number * cur.price, 0)
+				return this.cart.reduce((acc, cur) => acc + cur.quantity * cur.price, 0)
 			}
 		},
 		onLoad(option) {
@@ -245,12 +245,16 @@
 				this.pay()
 			},
 			pay() {
-				let shopCarList = uni.getStorageSync('cart')
+				let orderItem = uni.getStorageSync('cart')
 				let tableId = uni.getStorageSync('tableId')
 				let amount = this.amount
+				orderItem.forEach(m =>{
+					m.productId = m.id	
+					delete m.id
+				})
 				const param = {
 					createOrder: "",
-					shopCarList,
+					orderItem,
 					amount ,
 					tableId,
 					remark: ""

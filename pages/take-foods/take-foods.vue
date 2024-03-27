@@ -21,13 +21,13 @@
 								<view class="w-100 d-flex flex-column position-relative mt-30"
 									style="margin-bottom: -40rpx;">
 									<view class="w-100 d-flex align-items-center mb-40"
-										v-for="(good, index) in orderInfo.productDetailDtos" :key="index">
+										v-for="(good, index) in orderInfo.orderItems" :key="index">
 										<view class="d-flex flex-column w-60 overflow-hidden">
 											<view class="font-size-lg text-color-base mb-10 text-truncate">
 												{{ good.name }}
 											</view>
 											<view class="font-size-sm text-color-assist text-truncate">
-												{{ good.intro }}
+												{{ good.propsText }}
 											</view>
 										</view>
 										<view class="d-flex w-40 align-items-center justify-content-between pl-30">
@@ -121,7 +121,6 @@
 		},
 		methods: {
 			detail(orderId) {
-				console.log(orderId, "|||||")
 				uni.navigateTo({
 					url: '/pages/orders/detail?orderId=' + orderId
 				})
@@ -131,7 +130,7 @@
 				this.loading = true
 				GetCurrentOrderInfo(uni.getStorageSync("tableId")).then(res => {
 					this.orderInfo = res
-					console.log(this.orderInfo)
+					console.log(this.orderInfo)	
 					this.loading = false
 				})
 
