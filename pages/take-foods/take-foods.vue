@@ -12,7 +12,6 @@
 		</view>
 		<template v-else>
 			<view class="order-box" v-if="f">
-
 				<view class="bg-white">
 					<view class="section">
 						<list-cell :hover="false" padding="50rpx 30rpx">
@@ -26,7 +25,7 @@
 											<view class="font-size-lg text-color-base mb-10 text-truncate">
 												{{ good.name }}
 											</view>
-											<view class="font-size-sm text-color-assist text-truncate">
+											<view v-if="good.propsText != undefined" class="font-size-sm text-color-assist text-truncate">
 												{{ good.propsText }}
 											</view>
 										</view>

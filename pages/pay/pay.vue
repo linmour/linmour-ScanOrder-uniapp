@@ -76,7 +76,7 @@
 									<view>￥{{ item.price }}</view>
 								</view>
 							</view>
-							<view class="text-truncate font-size-base text-color-assist">
+							<view v-if="item.props_text != undefined" class="text-truncate font-size-base text-color-assist">
 								{{ item.props_text }}
 							</view>
 						</view>
