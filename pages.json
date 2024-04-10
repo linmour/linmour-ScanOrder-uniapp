@@ -3,14 +3,14 @@
 		 {
 			"path": "pages/menu/menu",
 			"style": {
-				"navigationBarTitleText": "奈雪の茶",
+				"navigationBarTitleText": "菜单",
 				"navigationBarTextStyle": "black",
 				"navigationBarBackgroundColor": "#ffffff"
 			}
 		}, {
 			"path": "pages/take-foods/take-foods",
 			"style": {
-				"navigationBarTitleText": "奈雪の茶",
+				"navigationBarTitleText": "进行中的订单",
 				"navigationBarTextStyle": "black",
 				"navigationBarBackgroundColor": "#ffffff"
 			}
@@ -18,7 +18,7 @@
 	    ,{
             "path" : "pages/pay/pay",
             "style" : {
-				"navigationBarTitleText": "奈雪の茶",
+				"navigationBarTitleText": "结算",
 				"navigationBarTextStyle": "black",
 				"navigationBarBackgroundColor": "#ffffff"
 			}

@@ -15,45 +15,7 @@
 		</view>
 
 		<view class="main" v-if="goods.length">
-			<view class="nav">
-				<view class="header">
-					<view class="left" v-if="orderType == 'takein'">
-						<view class="store-name">
-							<text>{{ store.name }}</text>
-							<view class="iconfont iconarrow-right"></view>
-						</view>
-						<view class="store-location">
-							<image src='/static/images/order/location.png' style="width: 30rpx; height: 30rpx;"
-								class="mr-10"></image>
-							<text>距离您 {{ store.distance_text }}</text>
-						</view>
-					</view>
-					<view class="left overflow-hidden" v-else>
-						<view class="d-flex align-items-center overflow-hidden">
-							<image src='/static/images/order/location.png' style="width: 30rpx; height: 30rpx;"
-								class="mr-10"></image>
-							<view class="font-size-extra-lg text-color-base font-weight-bold text-truncate">
-								{{ address.street }}
-							</view>
-						</view>
-						<view class="font-size-sm text-color-assist overflow-hidden text-truncate">
-							由<text class="text-color-base" style="margin: 0 10rpx">{{ store.name }}</text>配送
-						</view>
-					</view>
-					<view class="right">
-						<view class="dinein" :class="{active: orderType == 'takein'}" @tap="SET_ORDER_TYPE('takein')">
-							<text>自11取</text>
-						</view>
-						<view class="takeout" :class="{active: orderType == 'takeout'}" @tap="takout">
-							<text>外11卖</text>
-						</view>
-					</view>
-				</view>
-				<view class="coupon">
-					<text class="title">"霸气mini卡"超级购券活动，赶紧去购买</text>
-					<view class="iconfont iconarrow-right"></view>
-				</view>
-			</view>
+
 			<view class="content">
 				<scroll-view class="menus" :scroll-into-view="menuScrollIntoView" scroll-with-animation scroll-y>
 					<view class="wrapper">
