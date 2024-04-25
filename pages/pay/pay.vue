@@ -76,7 +76,8 @@
 									<view>￥{{ item.price }}</view>
 								</view>
 							</view>
-							<view v-if="item.props_text != undefined" class="text-truncate font-size-base text-color-assist">
+							<view v-if="item.props_text != undefined"
+								class="text-truncate font-size-base text-color-assist">
 								{{ item.props_text }}
 							</view>
 						</view>
@@ -248,14 +249,15 @@
 				let orderItem = uni.getStorageSync('cart')
 				let tableId = uni.getStorageSync('tableId')
 				let amount = this.amount
-				orderItem.forEach(m =>{
-					m.productId = m.id	
+				orderItem.forEach(m => {
+					m.productId = m.id
+					m.status = 0
 					delete m.id
 				})
 				const param = {
 					createOrder: "",
 					orderItem,
-					amount ,
+					amount,
 					tableId,
 					remark: ""
 				}
